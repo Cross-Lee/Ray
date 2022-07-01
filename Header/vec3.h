@@ -21,30 +21,35 @@ public:
     double operator[](int i) const { return e[i]; }
     double &operator[](int i) { return e[i]; }
 
-    vec3& operator+=(const vec3 &v) {
-            e[0] += v.e[0];
-            e[1] += v.e[1];
-            e[2] += v.e[2];
-            return *this;
-        }
+    vec3 &operator+=(const vec3 &v)
+    {
+        e[0] += v.e[0];
+        e[1] += v.e[1];
+        e[2] += v.e[2];
+        return *this;
+    }
 
-    vec3& operator*=(const double t) {
+    vec3 &operator*=(const double t)
+    {
         e[0] *= t;
         e[1] *= t;
         e[2] *= t;
         return *this;
     }
 
-    vec3& operator/=(const double t) {
-        return *this *= 1/t;
+    vec3 &operator/=(const double t)
+    {
+        return *this *= 1 / t;
     }
 
-    double length() const {
+    double length() const
+    {
         return sqrt(length_squared());
     }
 
-    double length_squared() const {
-        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+    double length_squared() const
+    {
+        return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
 
     inline static double random_double()
@@ -69,59 +74,76 @@ public:
         return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
     }
 
+    // 如果我们生成的随机单位向量与法向量正好相反，
+    // 则两者之和将为零，这将导致零散射方向向量。
+    // 这会导致稍后出现糟糕的情况（无穷大和 NaN），因此我们需要在传递条件之前拦截条件。
+    inline bool near_zero() const
+    {
+        // Return true if the vector is close to zero in all dimensions.
+        const auto s = 1e-8;
+        return (fabs(e[0]) < s && fabs(e[1]) < s && fabs(e[2]) < s);
+    }
+
 public:
     double e[3];
-
 };
 
 // vec3 Utility Functions
-inline std::ostream& operator<<(std::ostream &out, const vec3 &v) {
+inline std::ostream &operator<<(std::ostream &out, const vec3 &v)
+{
     return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
 }
 
-inline vec3 operator+(const vec3 &u, const vec3 &v) {
+inline vec3 operator+(const vec3 &u, const vec3 &v)
+{
     return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
 }
 
-inline vec3 operator-(const vec3 &u, const vec3 &v) {
+inline vec3 operator-(const vec3 &u, const vec3 &v)
+{
     return vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
 }
 
-inline vec3 operator*(const vec3 &u, const vec3 &v) {
+inline vec3 operator*(const vec3 &u, const vec3 &v)
+{
     return vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
 }
 
-inline vec3 operator*(double t, const vec3 &v) {
-    return vec3(t*v.e[0], t*v.e[1], t*v.e[2]);
+inline vec3 operator*(double t, const vec3 &v)
+{
+    return vec3(t * v.e[0], t * v.e[1], t * v.e[2]);
 }
 
-inline vec3 operator*(const vec3 &v, double t) {
+inline vec3 operator*(const vec3 &v, double t)
+{
     return t * v;
 }
 
-inline vec3 operator/(vec3 v, double t) {
-    return (1/t) * v;
+inline vec3 operator/(vec3 v, double t)
+{
+    return (1 / t) * v;
 }
 
-inline double dot(const vec3 &u, const vec3 &v) {
-    return u.e[0] * v.e[0]
-         + u.e[1] * v.e[1]
-         + u.e[2] * v.e[2];
+inline double dot(const vec3 &u, const vec3 &v)
+{
+    return u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2];
 }
 
-inline vec3 cross(const vec3 &u, const vec3 &v) {
+inline vec3 cross(const vec3 &u, const vec3 &v)
+{
     return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
                 u.e[2] * v.e[0] - u.e[0] * v.e[2],
                 u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
-inline vec3 unit_vector(vec3 v) {
+inline vec3 unit_vector(vec3 v)
+{
     return v / v.length();
 }
 
 inline vec3 random_in_unit_sphere()
 {
-    while(true)
+    while (true)
     {
         auto p = vec3::random(-1, 1);
         if (p.length_squared() >= 1)
@@ -140,20 +162,25 @@ inline vec3 random_unit_vector()
     // Both spheres are lighter in appearance after the change
 }
 
-inline vec3 random_in_hemisphere(const vec3& normal)
+// A more intuitive approach is to have a uniform scatter direction for all angles away from the hit point,
+// with no dependence on the angle from the normal.
+// Many of the first raytracing papers used this diffuse method (before adopting Lambertian diffuse).
+inline vec3 random_in_hemisphere(const vec3 &normal)
 {
     vec3 in_unit_sphere = random_in_unit_sphere();
     if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
         return in_unit_sphere;
     else
         return -in_unit_sphere;
-}   
-// A more intuitive approach is to have a uniform scatter direction for all angles away from the hit point, 
-// with no dependence on the angle from the normal. 
-// Many of the first raytracing papers used this diffuse method (before adopting Lambertian diffuse).
+}
+
+inline vec3 reflect(const vec3& v, const vec3& n)
+{
+    return v - 2 * dot(v, n) * n;
+}
 
 // Type aliases for vec3
-using point3 = vec3;   // 3D point
-using color = vec3;    // RGB color
+using point3 = vec3; // 3D point
+using color = vec3;  // RGB color
 
 #endif
