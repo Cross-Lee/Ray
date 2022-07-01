@@ -132,6 +132,26 @@ inline vec3 random_in_unit_sphere()
     }
 }
 
+inline vec3 random_unit_vector()
+{
+    return unit_vector(random_in_unit_sphere());
+    // 随机点分布更均匀
+    // The shadows are less pronounced after the change
+    // Both spheres are lighter in appearance after the change
+}
+
+inline vec3 random_in_hemisphere(const vec3& normal)
+{
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}   
+// A more intuitive approach is to have a uniform scatter direction for all angles away from the hit point, 
+// with no dependence on the angle from the normal. 
+// Many of the first raytracing papers used this diffuse method (before adopting Lambertian diffuse).
+
 // Type aliases for vec3
 using point3 = vec3;   // 3D point
 using color = vec3;    // RGB color
