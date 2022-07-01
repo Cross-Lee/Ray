@@ -9,7 +9,7 @@ class sphere : public hittable
 public:
     sphere() {}
     sphere(point3 cen, double r, shared_ptr<material> m)
-        : center(cen), radius(r), mat_ptr(m) {};
+        : center(cen), radius(r), mat_ptr(m){};
     sphere(point3 cen, double r) : center(cen), radius(r){};
 
     virtual bool hit(
@@ -36,7 +36,7 @@ bool sphere::hit(const ray &r, double t_min, double t_max, hit_record &rec) cons
     // Find the nearest root that lies in the acceptable range.
     auto root = (-half_b - sqrtd) / a; // 第一个根
     if (root < t_min || t_max < root)
-    { 
+    {
         // 不满足条件，所以计算第二个根
         root = (-half_b + sqrtd) / a;
         if (root < t_min || t_max < root)
