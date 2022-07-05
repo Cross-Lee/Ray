@@ -1,11 +1,11 @@
-### 1. 什么是`static_cast`
+### 1. `static_cast`
 ```cpp
 1. static_cast是一个c++运算符，功能是把一个表达式转换为某种类型，但没有运行时类型检查来保证转换的安全性。
 2. 向下取值
 ```
 
 
-### 2. 什么是`inline`内联函数
+### 2. `inline`内联函数
 ```cpp
 在 c/c++ 中，为了解决一些频繁调用的小函数大量消耗栈空间（栈内存）的问题，特别的引入了 inline 修饰符，表示为内联函数。
 
@@ -16,8 +16,8 @@
 https://www.runoob.com/w3cnote/cpp-inline-usage.html
 
 
-### 3. 复习一下运算符重载
+### 3. 运算符重载
 
-### 4. 复习一下const
-### 5. 复习一下虚函数
-### 6. 什么是shared_ptr
+### 4. const
+### 5. 虚函数
+### 6. shared_ptr
