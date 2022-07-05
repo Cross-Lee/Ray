@@ -14,30 +14,6 @@
 #include "Header/bvh.h"
 #include <iostream>
 
-// color ray_color(const ray &r, const hittable &world, int depth)
-// {
-//     hit_record rec;
-
-//     // If we've exceeded the ray bounce limit, no more light is gathered.
-//     if (depth <= 0)
-//     {
-//         return color(0, 0, 0);
-//     }
-
-//     if (world.hit(r, 0.001, infinity, rec))
-//     {
-//         ray scattered;
-//         color attenuation;
-//         if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-//             return attenuation * ray_color(scattered, world, depth - 1);
-//         return color(0, 0, 0);
-//     }
-
-//     vec3 unit_direction = unit_vector(r.direction());
-//     auto t = 0.5 * (unit_direction.y() + 1.0);
-//     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
-// }
-
 color ray_color(const ray &r, const color &background, const hittable &world, int depth)
 {
     hit_record rec;
@@ -53,11 +29,15 @@ color ray_color(const ray &r, const color &background, const hittable &world, in
     ray scattered;
     color attenuation;
     color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-
-    if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+    double pdf;
+    color albedo;
+    
+    if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf))
         return emitted;
 
-    return emitted + attenuation * ray_color(scattered, background, world, depth - 1);
+    return emitted
+         + albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered)
+                  * ray_color(scattered, background, world, depth-1) / pdf;
 }
 
 hittable_list random_scene()
@@ -289,7 +269,6 @@ hittable_list final_scene()
 int main()
 {
      // Image
-
     const auto aspect_ratio = 1.0 / 1.0;
     const int image_width = 600;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
@@ -297,13 +276,10 @@ int main()
     const int max_depth = 50;
 
     // World
-
     auto world = cornell_box();
-
     color background(0,0,0);
 
     // Camera
-
     point3 lookfrom(278, 278, -800);
     point3 lookat(278, 278, 0);
     vec3 vup(0, 1, 0);
@@ -312,11 +288,10 @@ int main()
     auto vfov = 40.0;
     auto time0 = 0.0;
     auto time1 = 1.0;
-
     camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, time0, time1);
 
     // Render
-    cout << "P3\n"
+    cout << "P3\n" 
          << image_width << ' ' << image_height << "\n255\n";
     for (int j = image_height - 1; j >= 0; --j)
     {
@@ -337,8 +312,3 @@ int main()
 
     cerr << "\nDone.\n";
 }
-
-// ray_color() 函数
-// 1. 计算从眼睛到像素的光线
-// 2. 确定光线与哪些对象相交
-// 3. 计算该交点的颜色
