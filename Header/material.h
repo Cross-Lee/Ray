@@ -11,7 +11,7 @@ struct hit_record;
 class material
 {
 public:
-    virtual color emitted(double u, double v, const point3 &p) const
+    virtual color emitted(const ray& r_in, const hit_record& rec, double u, double v, const point3 &p) const
     {
         return color(0, 0, 0);
     }
@@ -36,8 +36,8 @@ public:
     lambertian(shared_ptr<texture> a) : albedo(a) {}
 
     virtual bool scatter(
-        const ray& r_in, const hit_record& rec, color& alb, ray& scattered, double& pdf
-    ) const override {
+        const ray &r_in, const hit_record &rec, color &alb, ray &scattered, double &pdf) const override
+    {
         onb uvw;
         uvw.build_from_w(rec.normal);
         auto direction = uvw.local(random_cosine_direction());
@@ -129,9 +129,13 @@ public:
         return false;
     }
 
-    virtual color emitted(double u, double v, const point3 &p) const override
-    {
-        return emit->value(u, v, p);
+    virtual color emitted(const ray &r_in, const hit_record &rec, 
+    double u, double v, const point3 &p) const override {
+
+        if (rec.front_face)
+            return color(0, 0, 0);
+        else
+            return emit->value(u, v, p); // 教程似乎写反了
     }
 
 public:
