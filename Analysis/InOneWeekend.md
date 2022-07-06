@@ -19,7 +19,7 @@ build\Release\inOneWeekend.exe > image.ppm
 - 通过`std`库中的`cerr`与`flush`实现
 - 每生成一行像素，输出当前剩余的像素行数
 - 结束后输出Done
-```CPP
+```cpp
     for (int j = image_height-1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i) {
@@ -38,7 +38,36 @@ build\Release\inOneWeekend.exe > image.ppm
     std::cerr << "\nDone.\n";
 ```
 
-### vec3类
+### 3. vec3类
+#### 3.1 变量和方法
 - 自己构建三维向量运算库
-  - 默认构造vec3() 为 {0，0，0}
-#### 
+  - 默认构造`vec3() 为 {0，0，0}`
+  - 构造函数`vec3(double e0, double e1, double e2) : e{e0, e1, e2} {}`
+  - 提取分量`x()` `y()` `z()`
+  - 减号运算符重载
+  - 加号运算符重载
+  - 索引[]运算符重载
+  - 乘法运算符重载
+  - 除法运算符重载
+  - 求模长
+  - 求3个分量平方和
+  - 为vec3设置别名
+```cpp
+// Type aliases for vec3
+using point3 = vec3;   // 3D point
+using color = vec3;    // RGB color
+```
+#### 3.2 vec3 Utility Functions
+- 根据上下文观察，猜测是根据类中重载的运算符，写了一些后面会用到的函数，添加在头文件的第二部分，vec3类外
+> inline关键字：可以解决一些频繁调用的函数大量消耗栈空间（栈内存）的问题。
+> [宏，inline，static函数的区别](https://blog.csdn.net/Mr_H9527/article/details/100596854)
+
+#### 3.3 Color 实用函数
+- 通过`vec3.h`文件实现颜色写入的函数
+`void write_color(std::ostream &out, color pixel_color)`
+- 通过`vec.h` 和 `color.h` 优化`main.cpp`
+
+
+### 4. Rays, a Simple Camera, and Background
+#### 4.1 Ray 类
+- 使用`p = A + tb`的公式来描述射线
