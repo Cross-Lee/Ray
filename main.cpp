@@ -280,7 +280,7 @@ int main()
     const auto aspect_ratio = 1.0 / 1.0;
     const int image_width = 600;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 50;
     const int max_depth = 50;
 
     // World
@@ -289,7 +289,8 @@ int main()
     // auto lights = make_shared<hittable_list>();
     // lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
     // lights->add(make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>()));
-    shared_ptr<hittable> lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
+    // shared_ptr<hittable> lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
+    shared_ptr<hittable> lights = make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>());
     color background(0, 0, 0);
 
     // Camera

@@ -1,6 +1,8 @@
 #ifndef PDF_H
 #define PDF_H
 
+#include "onb.h"
+
 class pdf {
     public:
         virtual ~pdf() {}
@@ -76,5 +78,17 @@ class mixture_pdf : public pdf {
     public:
         shared_ptr<pdf> p[2];
 };
+
+inline vec3 random_to_sphere(double radius, double distance_squared) {
+    auto r1 = random_double();
+    auto r2 = random_double();
+    auto z = 1 + r2*(sqrt(1-radius*radius/distance_squared) - 1);
+
+    auto phi = 2*pi*r1;
+    auto x = cos(phi)*sqrt(1-z*z);
+    auto y = sin(phi)*sqrt(1-z*z);
+
+    return vec3(x, y, z);
+}
 
 #endif
