@@ -15,8 +15,11 @@
 #include <iostream>
 
 color ray_color(
-    const ray& r, const color& background, const hittable& world,
-    shared_ptr<hittable>& lights, int depth
+    const ray& r, 
+    const color& background, 
+    const hittable& world,
+    shared_ptr<hittable>& lights, 
+    int depth
 ) {
     hit_record rec;
 
@@ -28,24 +31,25 @@ color ray_color(
     if (!world.hit(r, 0.001, infinity, rec))
         return background;
 
-    ray scattered;
-    color attenuation;
+    scatter_record srec;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
-    double pdf_val;
-    color albedo;
-    if (!rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf_val))
+    if (!rec.mat_ptr->scatter(r, rec, srec))
         return emitted;
-    
-    auto p0 = make_shared<hittable_pdf>(lights, rec.p);
-    auto p1 = make_shared<cosine_pdf>(rec.normal);
-    mixture_pdf mixed_pdf(p0, p1);
 
-    scattered = ray(rec.p, mixed_pdf.generate(), r.time());
-    pdf_val = mixed_pdf.value(scattered.direction());
+    if (srec.is_specular) {
+        return srec.attenuation
+             * ray_color(srec.specular_ray, background, world, lights, depth-1);
+    }
+
+    auto light_ptr = make_shared<hittable_pdf>(lights, rec.p);
+    mixture_pdf p(light_ptr, srec.pdf_ptr);
+
+    ray scattered = ray(rec.p, p.generate(), r.time());
+    auto pdf_val = p.value(scattered.direction());
 
     return emitted
-         + albedo * rec.mat_ptr->scattering_pdf(r, rec, scattered)
-                  * ray_color(scattered, background, world, lights, depth-1) / pdf_val;
+        + srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered)
+                           * ray_color(scattered, background, world, lights, depth-1) / pdf_val;
 }
 
 hittable_list random_scene()
@@ -166,15 +170,14 @@ hittable_list cornell_box()
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-    shared_ptr<hittable> box1 = make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
+    shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+    shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), aluminum);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, vec3(265, 0, 295));
     objects.add(box1);
 
-    shared_ptr<hittable> box2 = make_shared<box>(point3(0, 0, 0), point3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
-    box2 = make_shared<translate>(box2, vec3(130, 0, 65));
-    objects.add(box2);
+    auto glass = make_shared<dielectric>(1.5);
+    objects.add(make_shared<sphere>(point3(190,90,190), 90 , glass));
 
     return objects;
 }
@@ -195,16 +198,13 @@ hittable_list cornell_smoke()
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-    shared_ptr<hittable> box1 = make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
+    shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+    shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), aluminum);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, vec3(265, 0, 295));
 
-    shared_ptr<hittable> box2 = make_shared<box>(point3(0, 0, 0), point3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
-    box2 = make_shared<translate>(box2, vec3(130, 0, 65));
-
-    objects.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
-    objects.add(make_shared<constant_medium>(box2, 0.01, color(1, 1, 1)));
+    auto glass = make_shared<dielectric>(1.5);
+    objects.add(make_shared<sphere>(point3(190,90,190), 90 , glass));
 
     return objects;
 }
@@ -285,8 +285,12 @@ int main()
 
     // World
     auto world = cornell_box();
-    color background(0,0,0);
+    // 添加多个灯光没有解决
+    // auto lights = make_shared<hittable_list>();
+    // lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
+    // lights->add(make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>()));
     shared_ptr<hittable> lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
+    color background(0, 0, 0);
 
     // Camera
     point3 lookfrom(278, 278, -800);
