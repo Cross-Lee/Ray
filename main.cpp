@@ -312,7 +312,7 @@ int main()
         cerr << "\rScanlines remaining: " << j << ' ' << flush;
         for (int i = 0; i < image_width; ++i)
         {
-            color pixel_color(0, 0, 0);
+            color pixel_color(0, 0, 0);b
             for (int s = 0; s < samples_per_pixel; ++s)
             {
                 auto u = (i + random_double()) / (image_width - 1);

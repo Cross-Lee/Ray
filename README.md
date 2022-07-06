@@ -1,3 +1,4 @@
+## 过程中需要复习的知识
 ### 1. `static_cast`
 ```cpp
 1. static_cast是一个c++运算符，功能是把一个表达式转换为某种类型，但没有运行时类型检查来保证转换的安全性。
@@ -21,3 +22,5 @@ https://www.runoob.com/w3cnote/cpp-inline-usage.html
 ### 4. const
 ### 5. 虚函数
 ### 6. shared_ptr
+
+> 好多采样都是50，所以跟图片跟教程有出入
