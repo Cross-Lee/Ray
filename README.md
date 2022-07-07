@@ -1,3 +1,6 @@
+[In One Weekend教程解析](Analysis/InOneWeekend.md)
+
+
 ## 过程中需要复习的知识
 ### 1. `static_cast`
 ```cpp
@@ -22,5 +25,6 @@ https://www.runoob.com/w3cnote/cpp-inline-usage.html
 ### 4. const
 ### 5. 虚函数
 ### 6. shared_ptr
+### 7. 继承
 
 > 好多采样都是50，所以跟图片跟教程有出入
