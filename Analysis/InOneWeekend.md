@@ -194,6 +194,7 @@ if (world.hit(r, 0, infinity, rec)) // 如果击中物体，才会着色
 }
 ```
 > 目前的着色是光线能否击中物体的概率，与背景颜色的插值？
+> 重点理解Diffuse含义
 
 #### 8.3 Gamma矫正
 - 通过Gamma矫正，对抗显示器的差异
@@ -259,3 +260,55 @@ if (world.hit(r, 0.001, infinity, rec)) {
     return color(0,0,0);
 }
 ```
+
+#### 9.5 金属球场景
+
+#### 9.6 模糊反射
+- 生成模糊的反射射线
+- `scattered = ray(rec.p, reflected + fuzz*random_in_unit_sphere());`
+
+### 10. 电介质
+- 每次交互只产生一条射线
+#### 10.1 折射
+#### 10.2 折射定律
+- Snell定律
+- 通过Snell定律实现折射函数
+```cpp
+// 已知入射光线，法线
+// uv是入射光线，n是法线，etai_over_etat是折射率比例
+vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) 
+{
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n); // 垂直分量
+    vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n; // 平行分量
+    return r_out_perp + r_out_parallel;
+}
+```
+
+#### 10.3 Total Internal Reflection
+- 折射定律存在极限，当两边的折射率比值超过sin的范围的时候，就不会折射，只可以反射
+
+#### 10.4 Schlick 近似
+- 玻璃材质具有菲涅尔现象
+- 增加菲涅尔值的判断
+- 在不能折射或超过菲涅尔阈值时反射
+
+#### 10.5 Modeling a Hollow Glass Sphere
+- 电介质材料构建半径为负时，可以创建空心玻璃球
+
+### 11. 完善相机类
+- 传入`vfov`，`aspect_ratio`，输出画面高度、宽度
+
+#### 11.2 控制相机位置与朝向
+- 增加`lookfrom`,`lookat`,`vup`
+- 构建相机朝向，位置
+
+### 12. 失焦
+- 不会模拟相机失焦原理
+- 将相机成像构建在虚拟平面上
+
+#### 12.2 生成采样rays
+- 光源不再从一个点发出，而是从一个面发出（光圈的原理）
+
+### 13. 最终结果
+#### 13.2 接下来
