@@ -1,3 +1,4 @@
+[In Next Weekend教程解析](Analysis/NextWeek.md)
 [In One Weekend教程解析](Analysis/InOneWeekend.md)
 
 
