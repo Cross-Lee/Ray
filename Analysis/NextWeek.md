@@ -182,3 +182,68 @@ bool box_z_compare (const shared_ptr<hittable> a, const shared_ptr<hittable> b) 
     return box_compare(a, b, 2);
 }
 ```
+
+### 4. Solid Texture
+- 纹理的产生可能是程序化生成，也可以是图像查找
+
+#### 4.1 texure.h类
+- 增加 `hit_record` 中击中点的uv坐标
+
+#### 4.2 球体的纹理坐标
+- 建立球上的点 与 uv坐标的映射
+
+#### 4.3 创建棋盘格纹理
+
+#### 4.4 使用棋盘格纹理渲染球体
+
+### 5. Perlin 噪声
+#### 5.1 使用随机数创建blocks
+#### 5.2 平滑噪声结果
+#### 5.3 使用Hermitian平滑改进
+#### 5.4 降低噪声频率
+#### 5.5 使用随机向量
+#### 5.6 引入湍流
+#### 5.7 调整相位
+
+### 6 图像贴图映射
+- 引入`stb_image`库
+#### 6.1 储存Image数据
+- 构造 `image_texture` 类
+
+#### 6.2 使用Image贴图
+- 创建地球
+
+### 7. 矩形和灯光
+- 创建有形状的灯光，就是创建会发光的材质
+
+#### 7.1 自发光材料
+- 创建自发光材料，不需要发光的父类中`emit`属性设置为黑色
+
+#### 7.2 添加背景
+- 将背景默认设置为黑色
+
+#### 7.3 添加矩形物体
+- 矩形面片的厚度为0，用k代替
+- 创建 `aacect.h` 头文件
+- aarect中，`t = (k-r.origin().z()) / r.direction().z()`
+- 矩形面片中，我们需要将其想象为一个厚度很小的盒子，所以
+```cpp
+// The bounding box must have non-zero width in each dimension, so pad the Z
+// dimension a small amount.
+output_box = aabb(point3(x0,y0, k-0.0001), point3(x1, y1, k+0.0001));
+```
+- 这里的k值实际上就是z值
+
+#### 7.4 将物体转变为灯光
+- 材质类中，我们需要添加一个发出的函数（我们也可以将它添加到 hit_record 中——这是设计品味的问题）。和背景一样，它只是告诉光线它是什么颜色，不进行反射。
+
+
+### 8. 实例
+
+
+### 9. 体积
+- 体积问题可以转化为随机的曲面
+
+#### 9.1 常量密度介质
+- 体积的密度代表为散射的可能性
+- 

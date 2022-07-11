@@ -29,3 +29,5 @@ https://www.runoob.com/w3cnote/cpp-inline-usage.html
 ### 7. 继承
 
 > 好多采样都是50，所以跟图片跟教程有出入
+
+[知乎大佬笔记](https://www.zhihu.com/column/c_1504519612624035840)
