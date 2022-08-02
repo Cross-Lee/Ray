@@ -21,14 +21,20 @@
 https://www.runoob.com/w3cnote/cpp-inline-usage.html
 
 
-##### 3. 运算符重载
-
-##### 4. const
-##### 5. 虚函数
-##### 6. shared_ptr
-##### 7. 继承
-
 > 好多采样都是50，所以跟图片跟教程有出入
+
+##### 3. 输出png格式
+http://chanhaeng.blogspot.com/2018/12/how-to-use-stbimagewrite.html
+
+##### 4. 加载模型
+
+##### 5. TBB多线程
+
+##### 6. 加速路口检测的八叉树数据结构
+
+##### 7. 生成的Ray
+GAMES101中，生成的Ray是[-1, 1]范围内的，但是在One Weekend中，Ray是[0, 1]的，归一化的操作在Image设置中。
 
 ## 参考资料
 [知乎大佬笔记](https://www.zhihu.com/column/c_1504519612624035840)
+

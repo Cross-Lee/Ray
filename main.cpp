@@ -13,6 +13,18 @@
 #include "Header/constant_medium.h"
 #include "Header/bvh.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "Header/stb_image.h"
+
+#define STBI_MSC_SECURE_CRT
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "Header/stb_image_write.h"
+
+#define CHANNEL_NUM 3
+#define RR 0.5
 
 color ray_color(
     const ray& r, 
@@ -21,6 +33,7 @@ color ray_color(
     shared_ptr<hittable>& lights, 
     int depth
 ) {
+    vec3 L_dir(0, 0, 0), L_indir(0, 0, 0);
     hit_record rec;
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
@@ -33,13 +46,24 @@ color ray_color(
 
     scatter_record srec;
     color emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+    
     if (!rec.mat_ptr->scatter(r, rec, srec))
-        return emitted;
+    {
+        L_dir = emitted;
+        return L_dir;
+    }
 
     if (srec.is_specular) {
-        return srec.attenuation
+        L_dir = srec.attenuation
              * ray_color(srec.specular_ray, background, world, lights, depth-1);
+        return L_dir;
     }
+
+    // 101中的RR是根据p点无差异进行着色，本文中的着色是根据判断着色的，所以不适合用RR
+    // if(random_double() > RR)
+    // {
+    //     return L_dir;
+    // }
 
     auto light_ptr = make_shared<hittable_pdf>(lights, rec.p);
     mixture_pdf p(light_ptr, srec.pdf_ptr);
@@ -47,9 +71,10 @@ color ray_color(
     ray scattered = ray(rec.p, p.generate(), r.time());
     auto pdf_val = p.value(scattered.direction());
 
-    return emitted
-        + srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered)
-                           * ray_color(scattered, background, world, lights, depth-1) / pdf_val;
+    return emitted + srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered)
+                           * ray_color(scattered, background, world, lights, depth-1) / pdf_val / RR;
+
+    // return L_dir + L_indir;
 }
 
 hittable_list cornell_box()
@@ -86,11 +111,12 @@ int main()
     const auto aspect_ratio = 1.0 / 1.0;
     const int image_width = 600;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 50;
+    const int samples_per_pixel = 5;
     const int max_depth = 50;
 
     // World (cornell_box(), background)
     auto world = cornell_box();
+    bvh_node bvh_root(world, 0, 1);
     // 添加多个灯光没有解决
     // auto lights = make_shared<hittable_list>();
     // lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
@@ -110,6 +136,11 @@ int main()
     auto time1 = 1.0;
     camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, time0, time1);
 
+    // // png prepare
+    // uint8_t* pixels = new uint8_t[image_height * image_width * CHANNEL_NUM];
+    // int index = 0;
+    // vec3 finalColor;
+
     // Render (image_width, image_height, samples_per_pixel)
     cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
     for (int j = image_height - 1; j >= 0; --j)
@@ -123,11 +154,19 @@ int main()
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
                 ray r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, background, world, lights, max_depth);
+                pixel_color += ray_color(r, background, bvh_root, lights, max_depth);
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
+            // pixels[index++] = write_png_color(pixel_color, samples_per_pixel)[0];
+            // cout << pixels[index] << endl;
+            // pixels[index++] = write_png_color(pixel_color, samples_per_pixel)[1];
+            // cout << pixels[index] << endl;
+            // pixels[index++] = write_png_color(pixel_color, samples_per_pixel)[2];
+            // cout << pixels[index] << endl;
         }
     }
+    // stbi_write_png("new.png", image_width, image_height, CHANNEL_NUM, pixels, image_width * CHANNEL_NUM);
+    // delete[] pixels;
 
     cerr << "\nDone.\n";
 }
